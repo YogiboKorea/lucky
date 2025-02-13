@@ -18,7 +18,7 @@ client.connect()
     console.log('MongoDB 연결 성공');
     // 만약 .env의 MONGODB_URI에 DB 이름이 포함되어 있지 않다면,
     // client.db('yourdbname')와 같이 DB 이름을 명시해주어야 합니다.
-    const db = client.db(); 
+    const db = client.db('yogibo'); 
     const entriesCollection = db.collection('entries');
 
     app.post('/api/entry', async (req, res) => {
@@ -32,7 +32,7 @@ client.connect()
         if (existingEntry) {
           return res.status(409).json({ message: '이미 참여하셨습니다.' });
         }
-   
+        
         // 참여 기록이 없으면 새로 삽입
         const newEntry = {
           memberId: memberId,
@@ -59,4 +59,4 @@ client.connect()
     process.exit(1);
   });
 
-
+  
