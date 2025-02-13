@@ -213,12 +213,14 @@ eventClient.connect()
         const worksheet = workbook.addWorksheet('럭키드로우 참여인원');
         worksheet.columns = [
           { header: '참여날짜', key: 'createdAt', width: 30 },
-          { header: '회원아이디', key: 'memberId', width: 20 }
+          { header: '회원아이디', key: 'memberId', width: 20 },
+          { header: '휴대폰번호', key: 'cellphone', width: 20 }
         ];
         entries.forEach(entry => {
           worksheet.addRow({
             memberId: entry.memberId,
-            createdAt: entry.createdAt
+            createdAt: entry.createdAt,
+            cellphone: entry.cellphone
           });
         });
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
