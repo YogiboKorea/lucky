@@ -1,11 +1,12 @@
 require('dotenv').config(); // 최상단에 추가하여 .env 파일의 변수를 로드합니다.
 const express = require('express');
 const { MongoClient } = require('mongodb');
+const cors = require('cors');
+
 const app = express();
 const port = process.env.PORT || 3100;
-const cors = require('cors');
-app.use(cors());
 
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -15,7 +16,7 @@ const client = new MongoClient(uri, { useUnifiedTopology: true });
 client.connect()
   .then(() => {
     console.log('MongoDB 연결 성공');
-    const db = client.db('yogibo'); // .env에 지정된 데이터베이스 사용
+    const db = client.db(); // .env에 지정된 데이터베이스 사용
     const entriesCollection = db.collection('entries');
 
     app.post('/api/entry', async (req, res) => {
@@ -24,15 +25,27 @@ client.connect()
         return res.status(400).json({ error: 'memberId 값이 필요합니다.' });
       }
       try {
+        // memberId가 이미 존재하는지 확인 (한 번만 참여 가능)
+        const existingEntry = await entriesCollection.findOne({ memberId });
+        if (existingEntry) {
+          return res.status(409).json({ message: '이미 참여하셨습니다.' });
+        }
+        
+        // 참여 기록 삽입
         const newEntry = {
           memberId: memberId,
           createdAt: new Date()
         };
         const result = await entriesCollection.insertOne(newEntry);
+
+        // 전체 참여자 수를 계산
+        const count = await entriesCollection.countDocuments();
+        
         res.json({
-          message: '회원 아이디 저장 성공',
+          message: '이벤트 응모 완료 되었습니다.',
           entry: newEntry,
-          insertedId: result.insertedId
+          insertedId: result.insertedId,
+          count: count  // 총 참여자 수 반환
         });
       } catch (error) {
         console.error('회원 아이디 저장 오류:', error);
@@ -48,3 +61,5 @@ client.connect()
     console.error('MongoDB 연결 실패:', err);
     process.exit(1);
   });
+
+
