@@ -50,6 +50,18 @@ client.connect()
       }
     });
 
+
+    // GET /api/entry/count: 총 참여자 수 반환 엔드포인트
+    app.get('/api/entry/count', async (req, res) => {
+      try {
+        const count = await entriesCollection.countDocuments();
+        res.json({ count });
+      } catch (error) {
+        console.error('참여자 수 가져오기 오류:', error);
+        res.status(500).json({ error: '서버 내부 오류' });
+      }
+    });
+    
     app.listen(port, () => {
       console.log(`서버가 포트 ${port}에서 실행 중입니다.`);
     });
