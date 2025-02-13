@@ -3,6 +3,8 @@ const express = require('express');
 const { MongoClient } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 3100;
+const cors = require('cors');
+app.use(cors());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -13,7 +15,7 @@ const client = new MongoClient(uri, { useUnifiedTopology: true });
 client.connect()
   .then(() => {
     console.log('MongoDB 연결 성공');
-    const db = client.db(); // .env에 지정된 데이터베이스 사용
+    const db = client.db('yogibo'); // .env에 지정된 데이터베이스 사용
     const entriesCollection = db.collection('entries');
 
     app.post('/api/entry', async (req, res) => {
