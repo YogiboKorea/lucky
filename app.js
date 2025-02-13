@@ -141,7 +141,7 @@ async function apiRequest(method, url, data = {}, params = {}) {
  * 예시: member_id를 기반으로 고객 데이터 가져오기
  */
 async function getCustomerDataByMemberId(memberId) {
-    const url = `https://${MALLID}.cafe24api.com/api/v2/admin/customers`;
+    const url = `https://yogibo.cafe24api.com/api/v2/admin/customers`;
     const params = { member_id: memberId }; // 또는 cellphone: '01012345678'
     try {
         const data = await apiRequest('GET', url, {}, params);
