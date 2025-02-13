@@ -77,8 +77,8 @@ client.connect()
 
         // 워크시트에 헤더 행을 추가합니다.
         worksheet.columns = [
-          { header: '회원아이디', key: 'memberId', width: 20 },
-          { header: '참여날짜', key: 'createdAt', width: 30 }
+          { header: '참여날짜', key: 'createdAt', width: 30 },
+          { header: '회원아이디', key: 'memberId', width: 20 }
         ];
 
         // 각 참여 데이터를 행으로 추가합니다.
