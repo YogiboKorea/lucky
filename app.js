@@ -16,7 +16,9 @@ const client = new MongoClient(uri, { useUnifiedTopology: true });
 client.connect()
   .then(() => {
     console.log('MongoDB 연결 성공');
-    const db = client.db(); // .env에 지정된 데이터베이스 사용
+    // 만약 .env의 MONGODB_URI에 DB 이름이 포함되어 있지 않다면,
+    // client.db('yourdbname')와 같이 DB 이름을 명시해주어야 합니다.
+    const db = client.db(); 
     const entriesCollection = db.collection('entries');
 
     app.post('/api/entry', async (req, res) => {
@@ -30,22 +32,17 @@ client.connect()
         if (existingEntry) {
           return res.status(409).json({ message: '이미 참여하셨습니다.' });
         }
-        
-        // 참여 기록 삽입
+   
+        // 참여 기록이 없으면 새로 삽입
         const newEntry = {
           memberId: memberId,
           createdAt: new Date()
         };
         const result = await entriesCollection.insertOne(newEntry);
-
-        // 전체 참여자 수를 계산
-        const count = await entriesCollection.countDocuments();
-        
         res.json({
           message: '이벤트 응모 완료 되었습니다.',
           entry: newEntry,
-          insertedId: result.insertedId,
-          count: count  // 총 참여자 수 반환
+          insertedId: result.insertedId
         });
       } catch (error) {
         console.error('회원 아이디 저장 오류:', error);
