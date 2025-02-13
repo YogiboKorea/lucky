@@ -141,18 +141,18 @@ async function apiRequest(method, url, data = {}, params = {}) {
  * 예시: member_id를 기반으로 고객 데이터 가져오기
  */
 async function getCustomerDataByMemberId(memberId) {
-    const url = `https://yogibo.cafe24api.com/api/v2/admin/customers`;
-    const params = { member_id: memberId }; // 또는 cellphone: '01012345678'
-    try {
-        const data = await apiRequest('GET', url, {}, params);
-        console.log('Customer Data:', data);
-        return data;
-    } catch (error) {
-        console.error(`Error fetching customer data for member_id ${memberId}:`, error);
-        throw error;
-    }
+  const url = `https://${MALLID}.cafe24api.com/api/v2/admin/customers`;
+  const params = { member_id: memberId }; // 또는 cellphone: '01012345678'
+  try {
+      const data = await apiRequest('GET', url, {}, params);
+      // 전체 데이터를 가독성 있게 출력합니다.
+      console.log('Customer Data:', JSON.stringify(data, null, 2));
+      return data;
+  } catch (error) {
+      console.error(`Error fetching customer data for member_id ${memberId}:`, error);
+      throw error;
+  }
 }
-
 // ===== 이벤트 참여 및 Excel 다운로드 관련 기능 =====
 
 // MongoDB 클라이언트 for 이벤트 참여 데이터 (같은 DB 사용)
