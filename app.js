@@ -73,7 +73,7 @@ client.connect()
 
         // 새로운 워크북과 워크시트를 생성합니다.
         const workbook = new ExcelJS.Workbook();
-        const worksheet = workbook.addWorksheet('Entries');
+        const worksheet = workbook.addWorksheet('럭키드로우 참여인원');
 
         // 워크시트에 헤더 행을 추가합니다.
         worksheet.columns = [
