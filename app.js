@@ -171,18 +171,40 @@ eventClient.connect()
         return res.status(400).json({ error: 'memberId 값이 필요합니다.' });
       }
       try {
-        // 중복 참여 확인: 동일한 memberId가 이미 존재하면 409 응답
         const existingEntry = await entriesCollection.findOne({ memberId });
         if (existingEntry) {
           return res.status(409).json({ message: '이미 참여하셨습니다.' });
         }
         
-        // 한국 시간 기준으로 날짜 생성
+        // 한국 시간 기준 날짜 생성
         const createdAtKST = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
+        
+        // 고객 데이터를 Cafe24 API를 통해 가져와 추가 정보를 포함시킵니다.
+        const customerData = await getCustomerDataByMemberId(memberId);
+        const customerInfo = (customerData.customers && customerData.customers[0]) || {};
+
         const newEntry = {
           memberId,
-          cellphone,  // 프론트에서 전달받은 휴대폰번호 (없으면 undefined)
-          createdAt: createdAtKST
+          cellphone, // 프론트엔드에서 전달받은 휴대폰번호 (없으면 undefined)
+          createdAt: createdAtKST,
+          shop_no: customerInfo.shop_no || '',
+          group_no: customerInfo.group_no || '',
+          member_authentication: customerInfo.member_authentication || '',
+          use_blacklist: customerInfo.use_blacklist || '',
+          blacklist_type: customerInfo.blacklist_type || '',
+          authentication_method: customerInfo.authentication_method || '',
+          sms: customerInfo.sms || '',
+          news_mail: customerInfo.news_mail || '',
+          solar_calendar: customerInfo.solar_calendar || '',
+          total_points: customerInfo.total_points || '',
+          available_points: customerInfo.available_points || '',
+          used_points: customerInfo.used_points || '',
+          last_login_date: customerInfo.last_login_date ? customerInfo.last_login_date.trim() : '',
+          created_date: customerInfo.created_date ? customerInfo.created_date.trim() : '',
+          gender: customerInfo.gender ? customerInfo.gender.trim() : '',
+          use_mobile_app: customerInfo.use_mobile_app || '',
+          available_credits: customerInfo.available_credits || '',
+          fixed_group: customerInfo.fixed_group || ''
         };
         const result = await entriesCollection.insertOne(newEntry);
         res.json({
@@ -208,19 +230,17 @@ eventClient.connect()
     });
 
     // GET /api/lucky/download: 이벤트 참여 데이터를 Excel 파일로 다운로드하는 엔드포인트  
-    // Excel 파일에 '참여날짜', '회원아이디', '휴대폰번호' 컬럼을 포함합니다.
+    // Excel 파일에 '참여날짜', '회원아이디', '휴대폰번호', 및 추가 고객정보 컬럼을 포함합니다.
     app.get('/api/lucky/download', async (req, res) => {
       try {
         const entries = await entriesCollection.find({}).toArray();
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet('럭키드로우 참여인원');
-        
-        // 워크시트에 다양한 컬럼을 정의합니다.
         worksheet.columns = [
           { header: '참여날짜', key: 'createdAt', width: 30 },
           { header: '회원아이디', key: 'memberId', width: 20 },
           { header: '휴대폰번호', key: 'cellphone', width: 20 },
-          { header: '쇼핑몰 번호', key: 'shop_no', width: 10 },
+          { header: '멀티쇼핑몰 번호', key: 'shop_no', width: 10 },
           { header: '회원등급번호', key: 'group_no', width: 10 },
           { header: '회원 인증여부', key: 'member_authentication', width: 15 },
           { header: '불량회원 설정', key: 'use_blacklist', width: 15 },
@@ -239,8 +259,6 @@ eventClient.connect()
           { header: '가용 예치금', key: 'available_credits', width: 10 },
           { header: '회원등급 고정 여부', key: 'fixed_group', width: 10 }
         ];
-    
-        // 각 참여 데이터를 행으로 추가합니다.
         entries.forEach(entry => {
           worksheet.addRow({
             createdAt: entry.createdAt,
@@ -266,7 +284,6 @@ eventClient.connect()
             fixed_group: entry.fixed_group || ''
           });
         });
-    
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.setHeader('Content-Disposition', 'attachment; filename=entries.xlsx');
         await workbook.xlsx.write(res);
