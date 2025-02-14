@@ -13,8 +13,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ===== 환경 변수 및 전역 변수 설정 =====
-const mongoUri = process.env.MONGODB_URI || 'mongodb+srv://admin:admin@cluster0.unz3ui3.mongodb.net/forum?retryWrites=true&w=majority',
-const dbName = process.env.DB_NAME || 'yogibo'
+const mongoUri = process.env.MONGODB_URI 
+const dbName = process.env.DB_NAME;
 const tokenCollectionName = process.env.TOKEN_COLLECTION_NAME || 'tokens';
 const clientId = process.env.CAFE24_CLIENT_ID || 'qS9s9ChnIVBlz2LEeEhKIC';
 const clientSecret = process.env.CAFE24_CLIENT_SECRET||'ZsihZwd2Il0qGmB3ZjUSID';
