@@ -13,11 +13,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ===== 환경 변수 및 전역 변수 설정 =====
-const mongoUri = process.env.MONGODB_URI;
-const dbName = process.env.DB_NAME;
+const mongoUri = process.env.MONGODB_URI || 'mongodb+srv://admin:admin@cluster0.unz3ui3.mongodb.net/forum?retryWrites=true&w=majority',
+const dbName = process.env.DB_NAME || 'yogibo'
 const tokenCollectionName = process.env.TOKEN_COLLECTION_NAME || 'tokens';
-const clientId = process.env.CAFE24_CLIENT_ID;
-const clientSecret = process.env.CAFE24_CLIENT_SECRET;
+const clientId = process.env.CAFE24_CLIENT_ID || 'qS9s9ChnIVBlz2LEeEhKIC';
+const clientSecret = process.env.CAFE24_CLIENT_SECRET||'ZsihZwd2Il0qGmB3ZjUSID';
 const MALLID = process.env.CAFE24_MALLID || 'yogibo';
 
 // 초기 토큰 값 (없으면 null)
@@ -108,7 +108,6 @@ async function refreshAccessToken() {
     throw error;
   }
 }
-
 /**
  * API 요청 함수 (자동 토큰 갱신 포함)
  */
@@ -142,7 +141,7 @@ async function apiRequest(method, url, data = {}, params = {}) {
  */
 async function getCustomerDataByMemberId(memberId) {
   const url = `https://${MALLID}.cafe24api.com/api/v2/admin/customers`;
-  const params = { member_id: memberId }; // 또는 cellphone: '01012345678'
+  const params = { member_id: memberId };
   try {
     const data = await apiRequest('GET', url, {}, params);
     console.log('Customer Data:', JSON.stringify(data, null, 2));
