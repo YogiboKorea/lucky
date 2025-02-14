@@ -151,6 +151,14 @@ async function getCustomerDataByMemberId(memberId) {
     throw error;
   }
 }
+(async () => {
+  try {
+    const customerData = await getCustomerDataByMemberId('testid');
+    console.log('Fetched customer data for testid:', JSON.stringify(customerData, null, 2));
+  } catch (error) {
+    console.error('Error fetching customer data for testid:', error);
+  }
+})();
 
 // ===== 이벤트 참여 및 Excel 다운로드 관련 기능 =====
 
