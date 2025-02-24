@@ -153,7 +153,7 @@ async function getCustomerDataByMemberId(memberId) {
 }
 (async () => {
   try {
-    const customerData = await getCustomerDataByMemberId('testid');
+    const customerData = await getCustomerDataByMemberId();
     console.log('고객 데이터 testid로 접근 해보기 testid:', JSON.stringify(customerData, null, 2));
   } catch (error) {
     console.error('Error fetching customer data for testid:', error);
@@ -192,10 +192,26 @@ eventClient.connect()
 
         const newEntry = {
           memberId,
+          cellphone: cellphone || customerInfo.phone || '', // 프론트엔드에서 전달받은 휴대폰번호 우선, 없으면 API 결과
           createdAt: createdAtKST,
-          cellphone :customerInfo.phone ||'', 
-          name: customerInfo.name || '',
-    
+          shop_no: customerInfo.shop_no || '',
+          group_no: customerInfo.group_no || '',
+          member_authentication: customerInfo.member_authentication || '',
+          use_blacklist: customerInfo.use_blacklist || '',
+          blacklist_type: customerInfo.blacklist_type || '',
+          authentication_method: customerInfo.authentication_method || '',
+          sms: customerInfo.sms || '',
+          news_mail: customerInfo.news_mail || '',
+          solar_calendar: customerInfo.solar_calendar || '',
+          total_points: customerInfo.total_points || '',
+          available_points: customerInfo.available_points || '',
+          used_points: customerInfo.used_points || '',
+          last_login_date: customerInfo.last_login_date ? customerInfo.last_login_date.trim() : '',
+          created_date: customerInfo.created_date ? customerInfo.created_date.trim() : '',
+          gender: customerInfo.gender ? customerInfo.gender.trim() : '',
+          use_mobile_app: customerInfo.use_mobile_app || '',
+          available_credits: customerInfo.available_credits || '',
+          fixed_group: customerInfo.fixed_group || ''
         };
         const result = await entriesCollection.insertOne(newEntry);
         res.json({
