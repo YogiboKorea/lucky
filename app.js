@@ -21,8 +21,8 @@ const clientSecret = process.env.CAFE24_CLIENT_SECRET||'ZsihZwd2Il0qGmB3ZjUSID';
 const MALLID = process.env.CAFE24_MALLID || 'yogibo';
 
 // 초기 토큰 값 (없으면 null)
-let accessToken = process.env.CAFE24_ACCESS_TOKEN || 'YdjJJOgeZqlbNJxB0npW8D';
-let refreshToken = process.env.CAFE24_REFRESH_TOKEN || 'LkkTatzBMlfEdSrdOgl8fN';
+let accessToken = process.env.CAFE24_ACCESS_TOKEN || 'G7zKj0CfQqTfuyItwHCdeZ';
+let refreshToken = process.env.CAFE24_REFRESH_TOKEN || 'fpVE8A96EizWRwD0rTIOfE';
 
 // ===== 토큰 관리 함수 =====
 
@@ -196,22 +196,7 @@ eventClient.connect()
           createdAt: createdAtKST,
           shop_no: customerInfo.shop_no || '',
           group_no: customerInfo.group_no || '',
-          member_authentication: customerInfo.member_authentication || '',
-          use_blacklist: customerInfo.use_blacklist || '',
-          blacklist_type: customerInfo.blacklist_type || '',
-          authentication_method: customerInfo.authentication_method || '',
-          sms: customerInfo.sms || '',
-          news_mail: customerInfo.news_mail || '',
-          solar_calendar: customerInfo.solar_calendar || '',
-          total_points: customerInfo.total_points || '',
-          available_points: customerInfo.available_points || '',
-          used_points: customerInfo.used_points || '',
-          last_login_date: customerInfo.last_login_date ? customerInfo.last_login_date.trim() : '',
-          created_date: customerInfo.created_date ? customerInfo.created_date.trim() : '',
-          gender: customerInfo.gender ? customerInfo.gender.trim() : '',
-          use_mobile_app: customerInfo.use_mobile_app || '',
-          available_credits: customerInfo.available_credits || '',
-          fixed_group: customerInfo.fixed_group || ''
+        
         };
         const result = await entriesCollection.insertOne(newEntry);
         res.json({
