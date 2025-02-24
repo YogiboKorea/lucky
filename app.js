@@ -173,7 +173,7 @@ eventClient.connect()
     // POST /api/entry: 이벤트 참여 데이터를 저장하는 엔드포인트  
     // 프론트엔드에서 memberId와 (선택적으로) cellphone 값을 전달합니다.
     app.post('/api/entry', async (req, res) => {
-      const { memberId, cellphone } = req.body;
+      const { memberId } = req.body;
       if (!memberId) {
         return res.status(400).json({ error: 'memberId 값이 필요합니다.' });
       }
@@ -192,11 +192,10 @@ eventClient.connect()
 
         const newEntry = {
           memberId,
-          cellphone, // 프론트엔드에서 전달받은 휴대폰번호 (없으면 undefined)
           createdAt: createdAtKST,
+          cellphone :customerInfo.cellphone ||'', 
           name: customerInfo.name || '',
-          cellphone: customerInfo.cellphone || '',
-        
+    
         };
         const result = await entriesCollection.insertOne(newEntry);
         res.json({
