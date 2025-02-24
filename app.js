@@ -168,8 +168,6 @@ clientInstance.connect()
     console.log('MongoDB 연결 성공');
     const db = clientInstance.db(dbName);
     const entriesCollection = db.collection('entries');
-
-
     app.post('/api/entry', async (req, res) => {
       const { memberId } = req.body;
       if (!memberId) {
@@ -188,10 +186,10 @@ clientInstance.connect()
           customerPrivacy = customerPrivacy[0];
         }
         
-        // 필요한 필드만 추출: member_id, cellphone, email, address1
-        const { member_id, cellphone, email, address1 } = customerPrivacy;
+        // 필요한 필드 추출: member_id, cellphone, email, address1, address2, sms, gender
+        const { member_id, cellphone, email, address1, address2, sms, gender } = customerPrivacy;
         
-        // 중복 참여 확인: 동일한 member_id가 이미 존재하면 409 응답
+        // 중복 참여 확인
         const existingEntry = await entriesCollection.findOne({ memberId: member_id });
         if (existingEntry) {
           return res.status(409).json({ message: '이미 참여하셨습니다.' });
@@ -200,15 +198,18 @@ clientInstance.connect()
         // 한국 시간 기준 날짜 생성
         const createdAtKST = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
         
-        // 저장할 객체 생성
+        // 저장할 객체 생성 (address1과 address2 모두 저장)
         const newEntry = {
           memberId: member_id,
           cellphone,
           email,
           address1,
+          address2,
+          sms,
+          gender,
           createdAt: createdAtKST
         };
-
+    
         const result = await entriesCollection.insertOne(newEntry);
         res.json({
           message: '이벤트 응모 완료 되었습니다.',
@@ -220,20 +221,7 @@ clientInstance.connect()
         res.status(500).json({ error: '서버 내부 오류' });
       }
     });
-
-
-    // GET /api/entry/count: 총 참여자 수 반환 엔드포인트
-    app.get('/api/entry/count', async (req, res) => {
-      try {
-        const count = await entriesCollection.countDocuments();
-        res.json({ count });
-      } catch (error) {
-        console.error('참여자 수 가져오기 오류:', error);
-        res.status(500).json({ error: '서버 내부 오류' });
-      }
-    });
-
-    // GET /api/lucky/download: 참여 데이터를 Excel 파일로 다운로드하는 엔드포인트
+    
     app.get('/api/lucky/download', async (req, res) => {
       try {
         const entries = await entriesCollection.find({}).toArray();
@@ -244,19 +232,27 @@ clientInstance.connect()
           { header: '회원아이디', key: 'memberId', width: 20 },
           { header: '휴대폰 번호', key: 'cellphone', width: 20 },
           { header: '이메일', key: 'email', width: 30 },
-          { header: '주소', key: 'address1', width: 40 }
+          { header: '주소', key: 'fullAddress', width: 50 },
+          { header: 'SNS 수신여부', key: 'sms', width: 15 },
+          { header: '성별', key: 'gender', width: 10 },
         ];
+        
         entries.forEach(entry => {
+          // address1과 address2 합치기 (address2가 있을 경우)
+          const fullAddress = entry.address1 + (entry.address2 ? ' ' + entry.address2 : '');
           worksheet.addRow({
+            createdAt: entry.createdAt,
             memberId: entry.memberId,
             cellphone: entry.cellphone,
             email: entry.email,
-            address1: entry.address1,
-            createdAt: entry.createdAt
+            fullAddress: fullAddress,
+            sms: entry.sms,
+            gender: entry.gender,
           });
         });
+        
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        res.setHeader('Content-Disposition', 'attachment; filename=entries.xlsx');
+        res.setHeader('Content-Disposition', 'attachment; filename=luckyEvent.xlsx');
         await workbook.xlsx.write(res);
         res.end();
       } catch (error) {
@@ -264,6 +260,7 @@ clientInstance.connect()
         res.status(500).json({ error: 'Excel 다운로드 중 오류 발생' });
       }
     });
+    
 
     app.listen(port, () => {
       console.log(`서버가 포트 ${port}에서 실행 중입니다.`);
