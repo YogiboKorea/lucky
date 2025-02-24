@@ -194,8 +194,8 @@ eventClient.connect()
           memberId,
           cellphone, // 프론트엔드에서 전달받은 휴대폰번호 (없으면 undefined)
           createdAt: createdAtKST,
-          shop_no: customerInfo.shop_no || '',
-          group_no: customerInfo.group_no || '',
+          name: customerInfo.name || '',
+          cellphone: customerInfo.cellphone || '',
         
         };
         const result = await entriesCollection.insertOne(newEntry);
