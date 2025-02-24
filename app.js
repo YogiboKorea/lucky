@@ -204,6 +204,7 @@ clientInstance.connect()
           address2,
           sms,
           gender,
+          name,
           createdAt: createdAtKST
         };
     
