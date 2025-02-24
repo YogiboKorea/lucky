@@ -11,20 +11,18 @@ const port = process.env.PORT || 3100;
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
 // ===== 환경 변수 및 전역 변수 설정 =====
-const mongoUri = process.env.MONGODB_URI 
+const mongoUri = process.env.MONGODB_URI;
 const dbName = process.env.DB_NAME;
 const tokenCollectionName = process.env.TOKEN_COLLECTION_NAME || 'tokens';
 const clientId = process.env.CAFE24_CLIENT_ID || 'qS9s9ChnIVBlz2LEeEhKIC';
-const clientSecret = process.env.CAFE24_CLIENT_SECRET||'ZsihZwd2Il0qGmB3ZjUSID';
+const clientSecret = process.env.CAFE24_CLIENT_SECRET || 'ZsihZwd2Il0qGmB3ZjUSID';
 const MALLID = process.env.CAFE24_MALLID || 'yogibo';
 
-// 초기 토큰 값 (없으면 null)
-let accessToken = process.env.CAFE24_ACCESS_TOKEN || 'aHQ3ZRKpPxbgdnFpkeJeuM';
-let refreshToken = process.env.CAFE24_REFRESH_TOKEN || 'QDBhqZOCIVAkEqm5IgUBiC';
-
-
-// ===== 토큰 관리 함수 =====
+// 초기 토큰 값은 process.env에서 가져오지 않고 null로 설정하여 MongoDB에서 무조건 불러오도록 함.
+let accessToken = null;
+let refreshToken = null;
 
 /**
  * MongoDB에서 토큰을 조회합니다.
@@ -41,7 +39,7 @@ async function getTokensFromDB() {
       refreshToken = tokens.refreshToken;
       console.log('MongoDB에서 토큰 로드 성공:', tokens);
     } else {
-      console.log('MongoDB에 저장된 토큰이 없습니다. 초기값 사용');
+      console.log('MongoDB에 저장된 토큰이 없습니다.');
     }
   } catch (error) {
     console.error('토큰 로드 중 오류:', error);
@@ -145,10 +143,8 @@ async function apiRequest(method, url, data = {}, params = {}) {
  * 예시: member_id를 기반으로 고객 데이터를 가져오기
  */
 async function getCustomerDataByMemberId(memberId) {
-  // 토큰이 없을 경우 MongoDB에서 로드
-  if (!accessToken || !refreshToken) {
-    await getTokensFromDB();
-  }
+  // 무조건 MongoDB에서 토큰을 로드하여 사용
+  await getTokensFromDB();
   const url = `https://${MALLID}.cafe24api.com/api/v2/admin/customersprivacy`;
   const params = { member_id: memberId };
   try {
@@ -168,6 +164,7 @@ clientInstance.connect()
     console.log('MongoDB 연결 성공');
     const db = clientInstance.db(dbName);
     const entriesCollection = db.collection('entries');
+    
     app.post('/api/entry', async (req, res) => {
       const { memberId } = req.body;
       if (!memberId) {
@@ -222,46 +219,45 @@ clientInstance.connect()
       }
     });
     
-app.get('/api/lucky/download', async (req, res) => {
-  try {
-    const entries = await entriesCollection.find({}).toArray();
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Entries');
-    worksheet.columns = [
-      { header: '참여 날짜', key: 'createdAt', width: 30 },
-      { header: '회원아이디', key: 'memberId', width: 20 },
-      { header: '휴대폰 번호', key: 'cellphone', width: 20 },
-      { header: '이메일', key: 'email', width: 30 },
-      { header: '주소', key: 'fullAddress', width: 50 },
-      { header: 'SNS 수신여부', key: 'sms', width: 15 },
-      { header: '성별', key: 'gender', width: 10 },
-    ];
-    
-    entries.forEach(entry => {
-      // address1과 address2 합치기 (address2가 있을 경우)
-      const fullAddress = entry.address1 + (entry.address2 ? ' ' + entry.address2 : '');
-      worksheet.addRow({
-        createdAt: entry.createdAt,
-        memberId: entry.memberId,
-        cellphone: entry.cellphone,
-        email: entry.email,
-        fullAddress: fullAddress,
-        sms: entry.sms,
-        gender: entry.gender,
-      });
+    app.get('/api/lucky/download', async (req, res) => {
+      try {
+        const entries = await entriesCollection.find({}).toArray();
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Entries');
+        worksheet.columns = [
+          { header: '참여 날짜', key: 'createdAt', width: 30 },
+          { header: '회원아이디', key: 'memberId', width: 20 },
+          { header: '휴대폰 번호', key: 'cellphone', width: 20 },
+          { header: '이메일', key: 'email', width: 30 },
+          { header: '주소', key: 'fullAddress', width: 50 },
+          { header: 'SNS 수신여부', key: 'sms', width: 15 },
+          { header: '성별', key: 'gender', width: 10 },
+        ];
+        
+        entries.forEach(entry => {
+          // address1과 address2 합치기 (address2가 있을 경우)
+          const fullAddress = entry.address1 + (entry.address2 ? ' ' + entry.address2 : '');
+          worksheet.addRow({
+            createdAt: entry.createdAt,
+            memberId: entry.memberId,
+            cellphone: entry.cellphone,
+            email: entry.email,
+            fullAddress: fullAddress,
+            sms: entry.sms,
+            gender: entry.gender,
+          });
+        });
+        
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', 'attachment; filename=luckyEvent.xlsx');
+        await workbook.xlsx.write(res);
+        res.end();
+      } catch (error) {
+        console.error('Excel 다운로드 오류:', error);
+        res.status(500).json({ error: 'Excel 다운로드 중 오류 발생' });
+      }
     });
     
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', 'attachment; filename=luckyEvent.xlsx');
-    await workbook.xlsx.write(res);
-    res.end();
-  } catch (error) {
-    console.error('Excel 다운로드 오류:', error);
-    res.status(500).json({ error: 'Excel 다운로드 중 오류 발생' });
-  }
-});
-
-
     app.listen(port, () => {
       console.log(`서버가 포트 ${port}에서 실행 중입니다.`);
     });
