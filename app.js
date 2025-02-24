@@ -157,6 +157,18 @@ async function getCustomerDataByMemberId(memberId) {
   }
 }
 
+app.get('/api/entry/count', async (req, res) => {
+  try {
+    const count = await entriesCollection.countDocuments();
+    res.json({ count });
+  } catch (error) {
+    console.error('참여자 수 가져오기 오류:', error);
+    res.status(500).json({ error: '서버 내부 오류' });
+  }
+});
+
+
+
 // MongoDB 연결 및 Express 서버 설정 (이벤트 참여 데이터 저장)
 const clientInstance = new MongoClient(mongoUri, { useUnifiedTopology: true });
 clientInstance.connect()
