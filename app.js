@@ -14,9 +14,9 @@ app.use(express.urlencoded({ extended: true }));
 // ===== 환경 변수 및 전역 변수 설정 =====
 const mongoUri = process.env.MONGODB_URI 
 const dbName = process.env.DB_NAME;
-const tokenCollectionName = 'tokens';
-const clientId = process.env.CAFE24_CLIENT_ID;
-const clientSecret = process.env.CAFE24_CLIENT_SECRET;
+const tokenCollectionName = process.env.TOKEN_COLLECTION_NAME || 'tokens';
+const clientId = process.env.CAFE24_CLIENT_ID || 'qS9s9ChnIVBlz2LEeEhKIC';
+const clientSecret = process.env.CAFE24_CLIENT_SECRET||'ZsihZwd2Il0qGmB3ZjUSID';
 const MALLID = process.env.CAFE24_MALLID || 'yogibo';
 
 // 초기 토큰 값 (없으면 null)
@@ -222,45 +222,45 @@ clientInstance.connect()
       }
     });
     
-    app.get('/api/lucky/download', async (req, res) => {
-      try {
-        const entries = await entriesCollection.find({}).toArray();
-        const workbook = new ExcelJS.Workbook();
-        const worksheet = workbook.addWorksheet('Entries');
-        worksheet.columns = [
-          { header: '참여 날짜', key: 'createdAt', width: 30 },
-          { header: '회원아이디', key: 'memberId', width: 20 },
-          { header: '휴대폰 번호', key: 'cellphone', width: 20 },
-          { header: '이메일', key: 'email', width: 30 },
-          { header: '주소', key: 'fullAddress', width: 50 },
-          { header: 'SNS 수신여부', key: 'sms', width: 15 },
-          { header: '성별', key: 'gender', width: 10 },
-        ];
-        
-        entries.forEach(entry => {
-          // address1과 address2 합치기 (address2가 있을 경우)
-          const fullAddress = entry.address1 + (entry.address2 ? ' ' + entry.address2 : '');
-          worksheet.addRow({
-            createdAt: entry.createdAt,
-            memberId: entry.memberId,
-            cellphone: entry.cellphone,
-            email: entry.email,
-            fullAddress: fullAddress,
-            sms: entry.sms,
-            gender: entry.gender,
-          });
-        });
-        
-        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        res.setHeader('Content-Disposition', 'attachment; filename=luckyEvent.xlsx');
-        await workbook.xlsx.write(res);
-        res.end();
-      } catch (error) {
-        console.error('Excel 다운로드 오류:', error);
-        res.status(500).json({ error: 'Excel 다운로드 중 오류 발생' });
-      }
+app.get('/api/lucky/download', async (req, res) => {
+  try {
+    const entries = await entriesCollection.find({}).toArray();
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Entries');
+    worksheet.columns = [
+      { header: '참여 날짜', key: 'createdAt', width: 30 },
+      { header: '회원아이디', key: 'memberId', width: 20 },
+      { header: '휴대폰 번호', key: 'cellphone', width: 20 },
+      { header: '이메일', key: 'email', width: 30 },
+      { header: '주소', key: 'fullAddress', width: 50 },
+      { header: 'SNS 수신여부', key: 'sms', width: 15 },
+      { header: '성별', key: 'gender', width: 10 },
+    ];
+    
+    entries.forEach(entry => {
+      // address1과 address2 합치기 (address2가 있을 경우)
+      const fullAddress = entry.address1 + (entry.address2 ? ' ' + entry.address2 : '');
+      worksheet.addRow({
+        createdAt: entry.createdAt,
+        memberId: entry.memberId,
+        cellphone: entry.cellphone,
+        email: entry.email,
+        fullAddress: fullAddress,
+        sms: entry.sms,
+        gender: entry.gender,
+      });
     });
     
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename=luckyEvent.xlsx');
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    console.error('Excel 다운로드 오류:', error);
+    res.status(500).json({ error: 'Excel 다운로드 중 오류 발생' });
+  }
+});
+
 
     app.listen(port, () => {
       console.log(`서버가 포트 ${port}에서 실행 중입니다.`);
