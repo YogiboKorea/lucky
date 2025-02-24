@@ -183,8 +183,8 @@ clientInstance.connect()
           customerPrivacy = customerPrivacy[0];
         }
         
-        // 필요한 필드 추출: member_id, cellphone, email, address1, address2, sms, gender
-        const { member_id, cellphone, email, address1, address2, sms, gender } = customerPrivacy;
+        // 필요한 필드 추출: member_id, name, cellphone, email, address1, address2, sms, gender
+        const { member_id, name, cellphone, email, address1, address2, sms, gender } = customerPrivacy;
         
         // 중복 참여 확인
         const existingEntry = await entriesCollection.findOne({ memberId: member_id });
@@ -195,9 +195,10 @@ clientInstance.connect()
         // 한국 시간 기준 날짜 생성
         const createdAtKST = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
         
-        // 저장할 객체 생성 (address1과 address2 모두 저장)
+        // 저장할 객체 생성 (address1과 address2 모두 저장, 그리고 고객 성함(name) 추가)
         const newEntry = {
           memberId: member_id,
+          name,
           cellphone,
           email,
           address1,
@@ -227,6 +228,7 @@ clientInstance.connect()
         worksheet.columns = [
           { header: '참여 날짜', key: 'createdAt', width: 30 },
           { header: '회원아이디', key: 'memberId', width: 20 },
+          { header: '회원 성함', key: 'name', width: 20 },
           { header: '휴대폰 번호', key: 'cellphone', width: 20 },
           { header: '이메일', key: 'email', width: 30 },
           { header: '주소', key: 'fullAddress', width: 50 },
@@ -240,6 +242,7 @@ clientInstance.connect()
           worksheet.addRow({
             createdAt: entry.createdAt,
             memberId: entry.memberId,
+            name: entry.name,
             cellphone: entry.cellphone,
             email: entry.email,
             fullAddress: fullAddress,
