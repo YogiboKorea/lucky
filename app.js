@@ -20,8 +20,8 @@ const clientSecret = process.env.CAFE24_CLIENT_SECRET||'ZsihZwd2Il0qGmB3ZjUSID';
 const MALLID = process.env.CAFE24_MALLID || 'yogibo';
 
 // 초기 토큰 값 (없으면 null)
-let accessToken = process.env.CAFE24_ACCESS_TOKEN || 'G7zKj0CfQqTfuyItwHCdeZ';
-let refreshToken = process.env.CAFE24_REFRESH_TOKEN || 'fpVE8A96EizWRwD0rTIOfE';
+let accessToken = process.env.CAFE24_ACCESS_TOKEN || 'aHQ3ZRKpPxbgdnFpkeJeuM';
+let refreshToken = process.env.CAFE24_REFRESH_TOKEN || 'QDBhqZOCIVAkEqm5IgUBiC';
 
 
 // ===== 토큰 관리 함수 =====
