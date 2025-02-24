@@ -204,7 +204,6 @@ clientInstance.connect()
           address2,
           sms,
           gender,
-          name,
           createdAt: createdAtKST
         };
     
@@ -228,7 +227,6 @@ clientInstance.connect()
         worksheet.columns = [
           { header: '참여 날짜', key: 'createdAt', width: 30 },
           { header: '회원아이디', key: 'memberId', width: 20 },
-          { header: '성함', key: 'name', width: 20 },
           { header: '휴대폰 번호', key: 'cellphone', width: 20 },
           { header: '이메일', key: 'email', width: 30 },
           { header: '주소', key: 'fullAddress', width: 50 },
@@ -243,7 +241,6 @@ clientInstance.connect()
             createdAt: entry.createdAt,
             memberId: entry.memberId,
             cellphone: entry.cellphone,
-            name: entry.name,
             email: entry.email,
             fullAddress: fullAddress,
             sms: entry.sms,
