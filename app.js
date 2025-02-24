@@ -16,8 +16,8 @@ app.use(express.urlencoded({ extended: true }));
 const mongoUri = process.env.MONGODB_URI;
 const dbName = process.env.DB_NAME;
 const tokenCollectionName = process.env.TOKEN_COLLECTION_NAME || 'tokens';
-const clientId = process.env.CAFE24_CLIENT_ID || 'qS9s9ChnIVBlz2LEeEhKIC';
-const clientSecret = process.env.CAFE24_CLIENT_SECRET || 'ZsihZwd2Il0qGmB3ZjUSID';
+const clientId = process.env.CAFE24_CLIENT_ID;
+const clientSecret = process.env.CAFE24_CLIENT_SECRET;
 const MALLID = process.env.CAFE24_MALLID || 'yogibo';
 
 // 초기 토큰 값은 process.env에서 가져오지 않고 null로 설정하여 MongoDB에서 무조건 불러오도록 함.
