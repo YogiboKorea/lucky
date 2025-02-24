@@ -193,7 +193,7 @@ eventClient.connect()
         const newEntry = {
           memberId,
           createdAt: createdAtKST,
-          cellphone :customerInfo.cellphone ||'', 
+          cellphone :customerInfo.phone ||'', 
           name: customerInfo.name || '',
     
         };
@@ -239,7 +239,7 @@ eventClient.connect()
           worksheet.addRow({
             createdAt: entry.createdAt,
             memberId: entry.memberId,
-            cellphone: entry.cellphone, 
+            cellphone: entry.phone, 
             name: entry.name 
           });
         });
