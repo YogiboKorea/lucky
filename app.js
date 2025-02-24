@@ -136,7 +136,9 @@ async function apiRequest(method, url, data = {}, params = {}) {
   }
 }
 
-
+/**
+ * 예시: member_id를 기반으로 고객 데이터 가져오기
+ */
 async function getCustomerDataByMemberId(memberId) {
   const url = `https://${MALLID}.cafe24api.com/api/v2/admin/customersprivacy`;
   const params = { member_id: memberId };
@@ -151,7 +153,7 @@ async function getCustomerDataByMemberId(memberId) {
 }
 (async () => {
   try {
-    const customerData = await getCustomerDataByMemberId();
+    const customerData = await getCustomerDataByMemberId('testid');
     console.log('고객 데이터 testid로 접근 해보기 testid:', JSON.stringify(customerData, null, 2));
   } catch (error) {
     console.error('Error fetching customer data for testid:', error);
@@ -171,7 +173,7 @@ eventClient.connect()
     // POST /api/entry: 이벤트 참여 데이터를 저장하는 엔드포인트  
     // 프론트엔드에서 memberId와 (선택적으로) cellphone 값을 전달합니다.
     app.post('/api/entry', async (req, res) => {
-      const { memberId, cellphone } = req.body;
+      const { memberId } = req.body;
       if (!memberId) {
         return res.status(400).json({ error: 'memberId 값이 필요합니다.' });
       }
@@ -186,13 +188,11 @@ eventClient.connect()
         
         // 고객 데이터를 Cafe24 API를 통해 가져와 추가 정보를 포함시킵니다.
         const customerData = await getCustomerDataByMemberId(memberId);
-        // customersprivacy 객체가 바로 반환되는 경우
-        const customerInfo = (customerData.customersprivacy) || {};
-        
+        const customerInfo = (customerData.customersprivacy && customerData.customersprivacy[0]) || {};
+
         const newEntry = {
           memberId,
-          cellphone: cellphone || customerInfo.phone || '', // 프론트엔드에서 전달받은 값 우선, 없으면 API 결과
-          name: customerInfo.name || '',  // 추가된 '이름' 필드
+          cellphone: cellphone || customerInfo.phone || '', // 프론트엔드에서 전달받은 휴대폰번호 우선, 없으면 API 결과
           createdAt: createdAtKST,
           shop_no: customerInfo.shop_no || '',
           group_no: customerInfo.group_no || '',
@@ -213,7 +213,6 @@ eventClient.connect()
           available_credits: customerInfo.available_credits || '',
           fixed_group: customerInfo.fixed_group || ''
         };
-        
         const result = await entriesCollection.insertOne(newEntry);
         res.json({
           message: '이벤트 응모 완료 되었습니다.',
@@ -225,7 +224,6 @@ eventClient.connect()
         res.status(500).json({ error: '서버 내부 오류' });
       }
     });
-    
 
     // GET /api/entry/count: 총 참여자 수 반환 엔드포인트
     app.get('/api/entry/count', async (req, res) => {
@@ -245,66 +243,26 @@ eventClient.connect()
         const entries = await entriesCollection.find({}).toArray();
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet('럭키드로우 참여인원');
-        
-        // 워크시트 컬럼 정의 (원하는 고객정보 필드를 모두 포함)
         worksheet.columns = [
           { header: '참여날짜', key: 'createdAt', width: 30 },
           { header: '회원아이디', key: 'memberId', width: 20 },
           { header: '휴대폰번호', key: 'cellphone', width: 20 },
           { header: '이름', key: 'name', width: 20 },
-          { header: '멀티쇼핑몰 번호', key: 'shop_no', width: 10 },
-          { header: '회원등급번호', key: 'group_no', width: 10 },
-          { header: '회원 인증여부', key: 'member_authentication', width: 15 },
-          { header: '불량회원 설정', key: 'use_blacklist', width: 15 },
-          { header: '불량회원 차단설정', key: 'blacklist_type', width: 15 },
-          { header: '인증 수단', key: 'authentication_method', width: 15 },
-          { header: 'SMS 수신여부', key: 'sms', width: 10 },
-          { header: '뉴스메일 수신여부', key: 'news_mail', width: 15 },
-          { header: '양력여부', key: 'solar_calendar', width: 10 },
-          { header: '총 적립금', key: 'total_points', width: 10 },
-          { header: '가용 적립금', key: 'available_points', width: 10 },
-          { header: '사용 적립금', key: 'used_points', width: 10 },
-          { header: '최근 접속일시', key: 'last_login_date', width: 20 },
-          { header: '가입일', key: 'created_date', width: 20 },
-          { header: '성별', key: 'gender', width: 10 },
-          { header: '모바일앱 사용여부', key: 'use_mobile_app', width: 10 },
-          { header: '가용 예치금', key: 'available_credits', width: 10 },
-          { header: '회원등급 고정 여부', key: 'fixed_group', width: 10 }
+
+  
         ];
-        
-        // 각 entry를 워크시트 행으로 추가
         entries.forEach(entry => {
           worksheet.addRow({
             createdAt: entry.createdAt,
             memberId: entry.memberId,
-            cellphone: entry.cellphone || '',
-            name: entry.name || '',
-            shop_no: entry.shop_no || '',
-            group_no: entry.group_no || '',
-            member_authentication: entry.member_authentication || '',
-            use_blacklist: entry.use_blacklist || '',
-            blacklist_type: entry.blacklist_type || '',
-            authentication_method: entry.authentication_method || '',
-            sms: entry.sms || '',
-            news_mail: entry.news_mail || '',
-            solar_calendar: entry.solar_calendar || '',
-            total_points: entry.total_points || '',
-            available_points: entry.available_points || '',
-            used_points: entry.used_points || '',
-            last_login_date: entry.last_login_date || '',
-            created_date: entry.created_date || '',
-            gender: entry.gender || '',
-            use_mobile_app: entry.use_mobile_app || '',
-            available_credits: entry.available_credits || '',
-            fixed_group: entry.fixed_group || ''
+            cellphone: entry.cellphone, 
+            name: entry.name 
           });
         });
-        
-        // Excel 파일 데이터를 버퍼로 생성 후 전송
-        const buffer = await workbook.xlsx.writeBuffer();
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.setHeader('Content-Disposition', 'attachment; filename=entries.xlsx');
-        res.send(buffer);
+        await workbook.xlsx.write(res);
+        res.end();
       } catch (error) {
         console.error('Excel 다운로드 오류:', error);
         res.status(500).json({ error: 'Excel 다운로드 중 오류 발생' });
