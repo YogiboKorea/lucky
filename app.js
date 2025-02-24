@@ -169,7 +169,7 @@ clientInstance.connect()
     const db = clientInstance.db(dbName);
     const entriesCollection = db.collection('entries');
 
-    // POST /api/entry: 고객 API에서 데이터를 가져와 필요한 필드만 추출 후 저장
+
     app.post('/api/entry', async (req, res) => {
       const { memberId } = req.body;
       if (!memberId) {
@@ -181,19 +181,25 @@ clientInstance.connect()
         if (!customerData || !customerData.customersprivacy) {
           return res.status(404).json({ error: '고객 데이터를 찾을 수 없습니다.' });
         }
-        const customerPrivacy = customerData.customersprivacy;
+        
+        // customersprivacy가 배열인 경우 첫 번째 항목 선택
+        let customerPrivacy = customerData.customersprivacy;
+        if (Array.isArray(customerPrivacy)) {
+          customerPrivacy = customerPrivacy[0];
+        }
+        
         // 필요한 필드만 추출: member_id, cellphone, email, address1
         const { member_id, cellphone, email, address1 } = customerPrivacy;
-
+        
         // 중복 참여 확인: 동일한 member_id가 이미 존재하면 409 응답
         const existingEntry = await entriesCollection.findOne({ memberId: member_id });
         if (existingEntry) {
           return res.status(409).json({ message: '이미 참여하셨습니다.' });
         }
-
+        
         // 한국 시간 기준 날짜 생성
         const createdAtKST = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
-
+        
         // 저장할 객체 생성
         const newEntry = {
           memberId: member_id,
@@ -214,6 +220,7 @@ clientInstance.connect()
         res.status(500).json({ error: '서버 내부 오류' });
       }
     });
+
 
     // GET /api/entry/count: 총 참여자 수 반환 엔드포인트
     app.get('/api/entry/count', async (req, res) => {
