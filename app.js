@@ -15,14 +15,14 @@ app.use(express.urlencoded({ extended: true }));
 // ===== 환경 변수 및 전역 변수 설정 =====
 const mongoUri = process.env.MONGODB_URI 
 const dbName = process.env.DB_NAME;
-const tokenCollectionName = process.env.TOKEN_COLLECTION_NAME;
-const clientId = process.env.CAFE24_CLIENT_ID;
-const clientSecret = process.env.CAFE24_CLIENT_SECRET;
+const tokenCollectionName = process.env.TOKEN_COLLECTION_NAME || 'tokens';
+const clientId = process.env.CAFE24_CLIENT_ID || 'qS9s9ChnIVBlz2LEeEhKIC';
+const clientSecret = process.env.CAFE24_CLIENT_SECRET||'ZsihZwd2Il0qGmB3ZjUSID';
 const MALLID = process.env.CAFE24_MALLID || 'yogibo';
 
 // 초기 토큰 값 (없으면 null)
-let accessToken = process.env.CAFE24_ACCESS_TOKEN;
-let refreshToken = process.env.CAFE24_REFRESH_TOKEN ;
+let accessToken = process.env.CAFE24_ACCESS_TOKEN || 'G7zKj0CfQqTfuyItwHCdeZ';
+let refreshToken = process.env.CAFE24_REFRESH_TOKEN || 'fpVE8A96EizWRwD0rTIOfE';
 
 // ===== 토큰 관리 함수 =====
 
