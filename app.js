@@ -136,9 +136,7 @@ async function apiRequest(method, url, data = {}, params = {}) {
   }
 }
 
-/**
- * 예시: member_id를 기반으로 고객 데이터 가져오기
- */
+
 async function getCustomerDataByMemberId(memberId) {
   const url = `https://${MALLID}.cafe24api.com/api/v2/admin/customersprivacy`;
   const params = { member_id: memberId };
@@ -255,14 +253,14 @@ eventClient.connect()
           worksheet.addRow({
             createdAt: entry.createdAt,
             memberId: entry.memberId,
-            cellphone: entry.cellphone, 
-            name: entry.name 
+            cellphone: entry.cellphone || '',
+            name: entry.name || ''
           });
         });
+        const buffer = await workbook.xlsx.writeBuffer();
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.setHeader('Content-Disposition', 'attachment; filename=entries.xlsx');
-        await workbook.xlsx.write(res);
-        res.end();
+        res.send(buffer);
       } catch (error) {
         console.error('Excel 다운로드 오류:', error);
         res.status(500).json({ error: 'Excel 다운로드 중 오류 발생' });
