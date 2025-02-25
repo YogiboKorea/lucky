@@ -79,6 +79,7 @@ async function saveTokensToDB(newAccessToken, newRefreshToken) {
 
 /**
  * Access Token 및 Refresh Token 갱신 함수
+ * 토큰이 만료된 경우 refreshAccessToken을 호출하고, 새 토큰을 MongoDB에 저장합니다.
  */
 async function refreshAccessToken() {
   try {
@@ -97,6 +98,7 @@ async function refreshAccessToken() {
     const newRefreshToken = response.data.refresh_token;
     console.log('Access Token 갱신 성공:', newAccessToken);
     console.log('Refresh Token 갱신 성공:', newRefreshToken);
+    // 갱신된 토큰을 MongoDB에 저장
     await saveTokensToDB(newAccessToken, newRefreshToken);
     accessToken = newAccessToken;
     refreshToken = newRefreshToken;
@@ -113,6 +115,7 @@ async function refreshAccessToken() {
 
 /**
  * API 요청 함수 (자동 토큰 갱신 포함)
+ * API 요청 시 accessToken을 사용하다가 401 에러 발생하면 refreshAccessToken을 호출하여 재시도합니다.
  */
 async function apiRequest(method, url, data = {}, params = {}) {
   try {
@@ -165,7 +168,7 @@ clientInstance.connect()
     const db = clientInstance.db(dbName);
     const entriesCollection = db.collection('entries');
     
-    // 참여자 수 반환 라우트 (여기서 entriesCollection 사용 가능)
+    // 참여자 수 반환 라우트 (entriesCollection 사용)
     app.get('/api/entry/count', async (req, res) => {
       try {
         const count = await entriesCollection.countDocuments();
@@ -206,7 +209,7 @@ clientInstance.connect()
         // 한국 시간 기준 날짜 생성
         const createdAtKST = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
         
-        // 저장할 객체 생성 (address1과 address2 모두 저장, 그리고 고객 성함(name) 추가)
+        // 저장할 객체 생성 (address1과 address2 모두 저장, 고객 성함(name) 추가)
         const newEntry = {
           memberId: member_id,
           name,
